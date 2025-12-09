@@ -1159,12 +1159,21 @@
     <div id="toast-container"></div>
 
 <script>
-    // Configuração do Supabase - Credenciais CORRIGIDAS
-    const SUPABASE_URL = 'https://wzzyxbkhmldfilvlihvl.supabase.co'; // Corrigido o URL
+    // Configuração do Supabase
+    const SUPABASE_URL = 'https://wzzyxbkhmldfilvlihvl.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6enl4YmtobWxmaWx2bGlodnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTAzNzcsImV4cCI6MjA3ODYyNjM3N30.K_QwwVD20xnlhNvTxb0jdTeH_3LU30W_aDeHquraQg8';
 
     // Inicializar Supabase
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+            persistSession: false
+        },
+        global: {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }
+    });
 
     // Estado da aplicação
     let estado = {
@@ -1173,7 +1182,7 @@
         membros: [],
         configuracoes: {},
         charts: {},
-        usandoLocalStorage: false // Flag para saber se estamos usando localStorage
+        usandoLocalStorage: false
     };
 
     // Elementos DOM
@@ -1181,11 +1190,27 @@
 
     // Inicialização da aplicação
     document.addEventListener('DOMContentLoaded', async function() {
+        console.log('DOM carregado, iniciando aplicação...');
+        
         // Coletar elementos DOM importantes
         coletarElementos();
         
         // Configurar eventos
         configurarEventos();
+        
+        // Esconder loading após 3 segundos máximo (timeout)
+        setTimeout(() => {
+            if (elementos.loadingOverlay.style.display !== 'none') {
+                console.log('Timeout atingido, forçando carregamento...');
+                elementos.loadingOverlay.style.display = 'none';
+                mostrarToast('Usando modo offline com dados locais', 'warning');
+                
+                // Tentar carregar do localStorage
+                carregarDoLocalStorage();
+                carregarDashboard();
+                inicializarCharts();
+            }
+        }, 3000);
         
         // Carregar dados iniciais
         await carregarDadosIniciais();
@@ -1194,33 +1219,15 @@
         const hoje = new Date().toISOString().split('T')[0];
         elementos.dataCulto.value = hoje;
         elementos.dataEscala.value = hoje;
-        
-        // Esconder loading
-        elementos.loadingOverlay.style.display = 'none';
     });
 
     // Coletar elementos DOM
     function coletarElementos() {
         elementos = {
-            // Elementos gerais
-            menuToggle: document.getElementById('menu-toggle'),
-            sidebar: document.getElementById('sidebar'),
-            mainContent: document.getElementById('main-content'),
             loadingOverlay: document.getElementById('loading-overlay'),
-            
-            // Navegação
-            tabButtons: document.querySelectorAll('.nav-menu a'),
-            tabContents: document.querySelectorAll('.tab-content'),
-            pageTitle: document.getElementById('page-title'),
-            pageSubtitle: document.getElementById('page-subtitle'),
-            
-            // Dashboard
             dashboardCards: document.getElementById('dashboard-cards'),
             ultimosCultos: document.getElementById('ultimos-cultos'),
-            
-            // Formulário de culto
             cultoForm: document.getElementById('culto-form'),
-            limparFormBtn: document.getElementById('limpar-form'),
             dataCulto: document.getElementById('data-culto'),
             diaSemana: document.getElementById('dia-semana'),
             tipoCulto: document.getElementById('tipo-culto'),
@@ -1239,47 +1246,6 @@
             musica: document.getElementById('musica'),
             midia: document.getElementById('midia'),
             observacoes: document.getElementById('observacoes'),
-            
-            // Histórico
-            historicoCultos: document.getElementById('historico-cultos'),
-            tabHistoricoButtons: document.querySelectorAll('.tab-btn'),
-            
-            // Escalas
-            dataEscala: document.getElementById('data-escala'),
-            tipoEscala: document.getElementById('tipo-escala'),
-            listaEscalas: document.getElementById('lista-escalas'),
-            
-            // Membros
-            btnNovoMembro: document.getElementById('btn-novo-membro'),
-            listaMembros: document.getElementById('lista-membros'),
-            modalMembro: document.getElementById('modal-membro'),
-            modalMembroTitle: document.getElementById('modal-membro-title'),
-            formMembro: document.getElementById('form-membro'),
-            membroId: document.getElementById('membro-id'),
-            membroNome: document.getElementById('membro-nome'),
-            membroEmail: document.getElementById('membro-email'),
-            membroTelefone: document.getElementById('membro-telefone'),
-            membroDepartamentos: document.getElementById('membro-departamentos'),
-            membroAtivo: document.getElementById('membro-ativo'),
-            btnCancelarMembro: document.getElementById('btn-cancelar-membro'),
-            modalMembroClose: document.getElementById('modal-membro-close'),
-            
-            // Configurações
-            configForm: document.getElementById('config-form'),
-            nomeIgreja: document.getElementById('nome-igreja'),
-            horariosCultos: document.getElementById('horarios-cultos'),
-            backup: document.getElementById('backup'),
-            notificacoes: document.getElementById('notificacoes'),
-            membrosAtivos: document.getElementById('membros-ativos'),
-            btnExportar: document.getElementById('btn-exportar'),
-            btnLimparDados: document.getElementById('btn-limpar-dados'),
-            
-            // Modal detalhes
-            modalDetalhes: document.getElementById('modal-detalhes'),
-            modalDetalhesContent: document.getElementById('modal-detalhes-content'),
-            modalClose: document.getElementById('modal-close'),
-            
-            // Toast
             toastContainer: document.getElementById('toast-container')
         };
     }
@@ -1287,13 +1253,13 @@
     // Configurar eventos
     function configurarEventos() {
         // Menu toggle
-        elementos.menuToggle.addEventListener('click', function() {
-            elementos.sidebar.classList.toggle('active');
-            elementos.mainContent.classList.toggle('active');
+        document.getElementById('menu-toggle').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+            document.getElementById('main-content').classList.toggle('active');
         });
         
         // Navegação entre abas
-        elementos.tabButtons.forEach(button => {
+        document.querySelectorAll('.nav-menu a').forEach(button => {
             button.addEventListener('click', function(e) {
                 e.preventDefault();
                 const targetId = this.getAttribute('href').substring(1);
@@ -1302,11 +1268,11 @@
                 atualizarTituloPagina(targetId);
                 
                 // Ativar aba clicada
-                elementos.tabButtons.forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.nav-menu a').forEach(btn => btn.classList.remove('active'));
                 this.classList.add('active');
                 
                 // Mostrar conteúdo correspondente
-                elementos.tabContents.forEach(content => {
+                document.querySelectorAll('.tab-content').forEach(content => {
                     content.classList.remove('active');
                     if (content.id === targetId) {
                         content.classList.add('active');
@@ -1315,8 +1281,8 @@
                 
                 // Fechar menu em mobile
                 if (window.innerWidth < 992) {
-                    elementos.sidebar.classList.remove('active');
-                    elementos.mainContent.classList.remove('active');
+                    document.getElementById('sidebar').classList.remove('active');
+                    document.getElementById('main-content').classList.remove('active');
                 }
                 
                 // Carregar dados específicos da aba
@@ -1344,175 +1310,52 @@
         });
         
         // Calcular total de presentes automaticamente
-        elementos.homens.addEventListener('input', calcularTotal);
-        elementos.mulheres.addEventListener('input', calcularTotal);
-        elementos.criancas.addEventListener('input', calcularTotal);
+        if (elementos.homens) elementos.homens.addEventListener('input', calcularTotal);
+        if (elementos.mulheres) elementos.mulheres.addEventListener('input', calcularTotal);
+        if (elementos.criancas) elementos.criancas.addEventListener('input', calcularTotal);
         
         // Limpar formulário de culto
-        elementos.limparFormBtn.addEventListener('click', function() {
-            elementos.cultoForm.reset();
-            elementos.totalPresentes.value = '';
-        });
+        if (document.getElementById('limpar-form')) {
+            document.getElementById('limpar-form').addEventListener('click', function() {
+                if (elementos.cultoForm) elementos.cultoForm.reset();
+                if (elementos.totalPresentes) elementos.totalPresentes.value = '';
+            });
+        }
         
         // Envio do formulário de culto
-        elementos.cultoForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            await registrarCulto();
-        });
-        
-        // Navegação entre abas do histórico
-        elementos.tabHistoricoButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const tabId = this.getAttribute('data-tab');
-                
-                // Ativar botão clicado
-                elementos.tabHistoricoButtons.forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
-                
-                // Filtrar histórico
-                filtrarHistorico(tabId);
+        if (elementos.cultoForm) {
+            elementos.cultoForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await registrarCulto();
             });
-        });
-        
-        // Filtros de escalas
-        elementos.dataEscala.addEventListener('change', carregarEscalas);
-        elementos.tipoEscala.addEventListener('change', carregarEscalas);
-        
-        // Gerenciamento de membros
-        elementos.btnNovoMembro.addEventListener('click', () => abrirModalMembro());
-        elementos.btnCancelarMembro.addEventListener('click', () => fecharModalMembro());
-        elementos.modalMembroClose.addEventListener('click', () => fecharModalMembro());
-        elementos.formMembro.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await salvarMembro();
-        });
-        
-        // Configurações
-        elementos.configForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await salvarConfiguracoes();
-        });
-        
-        elementos.btnExportar.addEventListener('click', exportarDados);
-        elementos.btnLimparDados.addEventListener('click', limparDadosTeste);
-        
-        // Modal detalhes
-        elementos.modalClose.addEventListener('click', () => {
-            elementos.modalDetalhes.classList.remove('active');
-        });
-        
-        // Fechar modal ao clicar fora
-        window.addEventListener('click', (e) => {
-            if (e.target === elementos.modalDetalhes) {
-                elementos.modalDetalhes.classList.remove('active');
-            }
-            if (e.target === elementos.modalMembro) {
-                fecharModalMembro();
-            }
-        });
+        }
     }
 
     // Carregar dados iniciais
     async function carregarDadosIniciais() {
+        console.log('Iniciando carregamento de dados...');
+        
         try {
-            elementos.loadingOverlay.style.display = 'flex';
-            
-            console.log('Iniciando carregamento de dados...');
-            
-            // Tentar carregar do Supabase primeiro
-            let carregadoDoSupabase = false;
+            // Tentar conectar ao Supabase com timeout
+            const supabasePromise = testarConexaoSupabase();
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Timeout ao conectar com Supabase')), 2000)
+            );
             
             try {
-                // Testar conexão com Supabase
-                const { data: testData, error: testError } = await supabase
-                    .from('cultos')
-                    .select('count');
+                // Esperar pelo resultado do Supabase ou timeout
+                await Promise.race([supabasePromise, timeoutPromise]);
                 
-                if (!testError) {
-                    console.log('Conexão com Supabase estabelecida com sucesso!');
-                    
-                    // Carregar cultos
-                    const { data: cultos, error: errorCultos } = await supabase
-                        .from('cultos')
-                        .select('*')
-                        .order('data_culto', { ascending: false });
-                    
-                    if (!errorCultos) {
-                        estado.cultos = cultos || [];
-                        console.log(`${estado.cultos.length} cultos carregados do Supabase`);
-                        carregadoDoSupabase = true;
-                    }
-                    
-                    // Carregar escalas
-                    const { data: escalas, error: errorEscalas } = await supabase
-                        .from('escalas')
-                        .select('*');
-                    
-                    if (!errorEscalas) {
-                        estado.escalas = escalas || [];
-                        console.log(`${estado.escalas.length} escalas carregadas do Supabase`);
-                    }
-                    
-                    // Carregar membros
-                    const { data: membros, error: errorMembros } = await supabase
-                        .from('membros')
-                        .select('*')
-                        .order('nome');
-                    
-                    if (!errorMembros) {
-                        estado.membros = membros || [];
-                        console.log(`${estado.membros.length} membros carregados do Supabase`);
-                    }
-                    
-                    // Carregar configurações
-                    const { data: configs, error: errorConfigs } = await supabase
-                        .from('configuracoes')
-                        .select('*');
-                    
-                    if (!errorConfigs && configs) {
-                        // Converter array de configurações para objeto
-                        estado.configuracoes = {};
-                        configs.forEach(config => {
-                            estado.configuracoes[config.chave] = config.valor;
-                        });
-                        console.log('Configurações carregadas do Supabase');
-                    }
-                    
-                    estado.usandoLocalStorage = false;
-                    
-                } else {
-                    console.warn('Erro ao conectar com Supabase, usando localStorage:', testError.message);
-                    carregadoDoSupabase = false;
-                }
-            } catch (supabaseError) {
-                console.warn('Supabase não disponível, usando localStorage:', supabaseError.message);
-                carregadoDoSupabase = false;
-            }
-            
-            // Se não conseguiu carregar do Supabase, usar localStorage
-            if (!carregadoDoSupabase) {
-                console.log('Usando localStorage como fallback...');
+                // Se chegou aqui, Supabase conectou
+                console.log('Supabase conectado, carregando dados...');
+                await carregarDoSupabase();
+                estado.usandoLocalStorage = false;
+                
+            } catch (error) {
+                // Timeout ou erro no Supabase
+                console.warn('Usando localStorage:', error.message);
                 estado.usandoLocalStorage = true;
-                
-                // Carregar do localStorage
-                const cultosStorage = localStorage.getItem('cultos_verbo_vida');
-                const escalasStorage = localStorage.getItem('escalas_verbo_vida');
-                const membrosStorage = localStorage.getItem('membros_verbo_vida');
-                const configsStorage = localStorage.getItem('configs_verbo_vida');
-                
-                estado.cultos = cultosStorage ? JSON.parse(cultosStorage) : [];
-                estado.escalas = escalasStorage ? JSON.parse(escalasStorage) : [];
-                estado.membros = membrosStorage ? JSON.parse(membrosStorage) : [];
-                estado.configuracoes = configsStorage ? JSON.parse(configsStorage) : {};
-                
-                console.log(`${estado.cultos.length} cultos carregados do localStorage`);
-                console.log(`${estado.escalas.length} escalas carregadas do localStorage`);
-                console.log(`${estado.membros.length} membros carregados do localStorage`);
-                
-                // Se não houver dados iniciais, criar dados de exemplo
-                if (estado.cultos.length === 0) {
-                    await criarDadosIniciais();
-                }
+                carregarDoLocalStorage();
             }
             
             // Carregar dashboard
@@ -1524,38 +1367,161 @@
             mostrarToast('Sistema carregado com sucesso!', 'success');
             
         } catch (error) {
-            console.error('Erro ao carregar dados:', error);
-            mostrarToast('Usando modo offline com localStorage', 'warning');
+            console.error('Erro crítico:', error);
+            mostrarToast('Carregando em modo offline', 'warning');
             
-            // Tentar carregar do localStorage como último recurso
-            try {
-                estado.usandoLocalStorage = true;
-                const cultosStorage = localStorage.getItem('cultos_verbo_vida');
-                estado.cultos = cultosStorage ? JSON.parse(cultosStorage) : [];
-                
-                if (estado.cultos.length === 0) {
-                    await criarDadosIniciais();
-                }
-                
-                carregarDashboard();
-                inicializarCharts();
-            } catch (localError) {
-                mostrarToast('Erro crítico ao carregar dados', 'error');
-            }
+            // Último recurso: carregar do localStorage
+            carregarDoLocalStorage();
+            carregarDashboard();
+            inicializarCharts();
         } finally {
+            // Sempre esconder o loading
             elementos.loadingOverlay.style.display = 'none';
         }
     }
 
-    // Criar dados iniciais de exemplo
-    async function criarDadosIniciais() {
-        console.log('Criando dados iniciais de exemplo...');
+    // Testar conexão com Supabase
+    async function testarConexaoSupabase() {
+        try {
+            const { data, error } = await supabase
+                .from('cultos')
+                .select('count', { count: 'exact', head: true })
+                .limit(1);
+            
+            if (error) throw error;
+            console.log('Conexão Supabase testada com sucesso');
+            return data;
+        } catch (error) {
+            console.error('Erro ao testar Supabase:', error);
+            throw error;
+        }
+    }
+
+    // Carregar dados do Supabase
+    async function carregarDoSupabase() {
+        try {
+            console.log('Carregando dados do Supabase...');
+            
+            // Carregar cultos
+            const { data: cultos, error: errorCultos } = await supabase
+                .from('cultos')
+                .select('*')
+                .order('data_culto', { ascending: false });
+            
+            if (errorCultos) throw errorCultos;
+            estado.cultos = cultos || [];
+            console.log(`${estado.cultos.length} cultos carregados do Supabase`);
+            
+            // Carregar escalas
+            const { data: escalas, error: errorEscalas } = await supabase
+                .from('escalas')
+                .select('*');
+            
+            if (errorEscalas) throw errorEscalas;
+            estado.escalas = escalas || [];
+            console.log(`${estado.escalas.length} escalas carregadas do Supabase`);
+            
+            // Carregar membros
+            const { data: membros, error: errorMembros } = await supabase
+                .from('membros')
+                .select('*')
+                .order('nome');
+            
+            if (errorMembros) throw errorMembros;
+            estado.membros = membros || [];
+            console.log(`${estado.membros.length} membros carregados do Supabase`);
+            
+            // Carregar configurações
+            const { data: configs, error: errorConfigs } = await supabase
+                .from('configuracoes')
+                .select('*');
+            
+            if (!errorConfigs && configs) {
+                estado.configuracoes = {};
+                configs.forEach(config => {
+                    estado.configuracoes[config.chave] = config.valor;
+                });
+                console.log('Configurações carregadas do Supabase');
+            }
+            
+        } catch (error) {
+            console.error('Erro ao carregar do Supabase:', error);
+            throw error;
+        }
+    }
+
+    // Carregar dados do localStorage
+    function carregarDoLocalStorage() {
+        console.log('Carregando dados do localStorage...');
         
-        // Dados de exemplo para cultos
+        try {
+            // Carregar cultos
+            const cultosStorage = localStorage.getItem('cultos_verbo_vida');
+            if (cultosStorage) {
+                estado.cultos = JSON.parse(cultosStorage);
+                console.log(`${estado.cultos.length} cultos carregados do localStorage`);
+            } else {
+                estado.cultos = [];
+                console.log('Nenhum culto encontrado no localStorage');
+            }
+            
+            // Carregar escalas
+            const escalasStorage = localStorage.getItem('escalas_verbo_vida');
+            if (escalasStorage) {
+                estado.escalas = JSON.parse(escalasStorage);
+                console.log(`${estado.escalas.length} escalas carregadas do localStorage`);
+            } else {
+                estado.escalas = [];
+            }
+            
+            // Carregar membros
+            const membrosStorage = localStorage.getItem('membros_verbo_vida');
+            if (membrosStorage) {
+                estado.membros = JSON.parse(membrosStorage);
+                console.log(`${estado.membros.length} membros carregados do localStorage`);
+            } else {
+                estado.membros = [];
+            }
+            
+            // Carregar configurações
+            const configsStorage = localStorage.getItem('configs_verbo_vida');
+            if (configsStorage) {
+                estado.configuracoes = JSON.parse(configsStorage);
+                console.log('Configurações carregadas do localStorage');
+            } else {
+                estado.configuracoes = {
+                    nome_igreja: 'Igreja Verbo da Vida Zona Leste',
+                    horarios_cultos: 'Terça e Quinta: 19:30, Domingo: 18:00',
+                    backup_automatico: 'semanal',
+                    notificacoes: 'ativas'
+                };
+            }
+            
+            // Se não houver dados, criar exemplos
+            if (estado.cultos.length === 0) {
+                criarDadosExemplo();
+                salvarNoLocalStorage();
+            }
+            
+        } catch (error) {
+            console.error('Erro ao carregar do localStorage:', error);
+            // Criar dados de exemplo em caso de erro
+            criarDadosExemplo();
+        }
+    }
+
+    // Criar dados de exemplo
+    function criarDadosExemplo() {
+        console.log('Criando dados de exemplo...');
+        
+        const hoje = new Date();
+        const umaSemanaAtras = new Date(hoje);
+        umaSemanaAtras.setDate(hoje.getDate() - 7);
+        
         estado.cultos = [
             {
                 id: 1,
-                data_culto: '2024-01-15',
+                data_culto: umaSemanaAtras.toISOString().split('T')[0],
                 dia_semana: 'domingo',
                 tipo_culto: 'Culto da Família',
                 hora_inicio: '18:00',
@@ -1570,7 +1536,7 @@
             },
             {
                 id: 2,
-                data_culto: '2024-01-16',
+                data_culto: new Date(umaSemanaAtras.getTime() + 86400000 * 2).toISOString().split('T')[0],
                 dia_semana: 'terca',
                 tipo_culto: 'Culto de Jovens',
                 hora_inicio: '19:30',
@@ -1585,7 +1551,6 @@
             }
         ];
         
-        // Dados de exemplo para escalas
         estado.escalas = [
             { id: 1, culto_id: 1, departamento: 'Diaconato', nomes: 'Carlos, Roberto, José' },
             { id: 2, culto_id: 1, departamento: 'Departamento Infantil', nomes: 'Ana, Claudia, Beatriz' },
@@ -1594,7 +1559,6 @@
             { id: 5, culto_id: 1, departamento: 'Mídia', nomes: 'Lucas, Rafael' }
         ];
         
-        // Dados de exemplo para membros
         estado.membros = [
             {
                 id: 1,
@@ -1614,18 +1578,7 @@
             }
         ];
         
-        // Configurações iniciais
-        estado.configuracoes = {
-            nome_igreja: 'Igreja Verbo da Vida Zona Leste',
-            horarios_cultos: 'Terça e Quinta: 19:30, Domingo: 18:00',
-            backup_automatico: 'semanal',
-            notificacoes: 'ativas'
-        };
-        
-        // Salvar no localStorage
-        salvarNoLocalStorage();
-        
-        console.log('Dados iniciais criados com sucesso!');
+        console.log('Dados de exemplo criados com sucesso');
     }
 
     // Salvar dados no localStorage
@@ -1643,6 +1596,8 @@
 
     // Funções auxiliares
     function calcularTotal() {
+        if (!elementos.homens || !elementos.mulheres || !elementos.criancas || !elementos.totalPresentes) return;
+        
         const homensVal = parseInt(elementos.homens.value) || 0;
         const mulheresVal = parseInt(elementos.mulheres.value) || 0;
         const criancasVal = parseInt(elementos.criancas.value) || 0;
@@ -1662,14 +1617,18 @@
         };
         
         if (titulos[aba]) {
-            elementos.pageTitle.textContent = titulos[aba][0];
-            elementos.pageSubtitle.textContent = titulos[aba][1];
+            document.getElementById('page-title').textContent = titulos[aba][0];
+            document.getElementById('page-subtitle').textContent = titulos[aba][1];
         }
     }
 
     function formatarData(dataStr) {
-        const data = new Date(dataStr);
-        return data.toLocaleDateString('pt-BR');
+        try {
+            const data = new Date(dataStr);
+            return data.toLocaleDateString('pt-BR');
+        } catch (error) {
+            return dataStr;
+        }
     }
 
     function formatarDia(dia) {
@@ -1682,6 +1641,8 @@
     }
 
     function mostrarToast(mensagem, tipo = 'info') {
+        if (!elementos.toastContainer) return;
+        
         const toast = document.createElement('div');
         toast.className = `toast toast-${tipo}`;
         toast.textContent = mensagem;
@@ -1697,10 +1658,12 @@
     // Funções de carregamento de dados
     async function carregarDashboard() {
         try {
+            if (!elementos.dashboardCards || !elementos.ultimosCultos) return;
+            
             // Calcular estatísticas
             const totalCultos = estado.cultos.length;
             const totalPessoas = estado.cultos.reduce((total, culto) => {
-                return total + culto.homens + culto.mulheres + culto.criancas;
+                return total + (culto.homens || 0) + (culto.mulheres || 0) + (culto.criancas || 0);
             }, 0);
             const mediaPublico = totalCultos > 0 ? Math.round(totalPessoas / totalCultos) : 0;
             
@@ -1789,7 +1752,7 @@
             }
             
             ultimosCultos.forEach(culto => {
-                const totalPresentes = culto.homens + culto.mulheres + culto.criancas;
+                const totalPresentes = (culto.homens || 0) + (culto.mulheres || 0) + (culto.criancas || 0);
                 const diaFormatado = formatarDia(culto.dia_semana);
                 
                 const row = document.createElement('tr');
@@ -1815,12 +1778,89 @@
         }
     }
 
-    // CONTINUAÇÃO DO CÓDIGO (as outras funções permanecem as mesmas)
-    // ... [resto do código permanece igual até a função registrarCulto]
-    
+    // Funções de gráficos
+    function inicializarCharts() {
+        try {
+            // Gráfico de tipo de culto
+            const cultoTypeCanvas = document.getElementById('cultoTypeChart');
+            if (cultoTypeCanvas) {
+                const cultoTypeCtx = cultoTypeCanvas.getContext('2d');
+                estado.charts.cultoType = new Chart(cultoTypeCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Culto da Família', 'Culto de Jovens', 'Culto de Oração', 'Santa Ceia', 'Culto Especial'],
+                        datasets: [{
+                            data: [40, 25, 20, 10, 5],
+                            backgroundColor: [
+                                'rgba(26, 95, 180, 0.8)',
+                                'rgba(230, 126, 34, 0.8)',
+                                'rgba(40, 167, 69, 0.8)',
+                                'rgba(108, 117, 125, 0.8)',
+                                'rgba(153, 102, 255, 0.8)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Gráfico demográfico
+            const demographicsCanvas = document.getElementById('demographicsChart');
+            if (demographicsCanvas) {
+                const demographicsCtx = demographicsCanvas.getContext('2d');
+                estado.charts.demographics = new Chart(demographicsCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Homens', 'Mulheres', 'Crianças'],
+                        datasets: [{
+                            label: 'Média por Culto',
+                            data: [125, 145, 32],
+                            backgroundColor: [
+                                'rgba(26, 95, 180, 0.7)',
+                                'rgba(230, 126, 34, 0.7)',
+                                'rgba(40, 167, 69, 0.7)'
+                            ],
+                            borderColor: [
+                                'rgba(26, 95, 180, 1)',
+                                'rgba(230, 126, 34, 1)',
+                                'rgba(40, 167, 69, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Quantidade de Pessoas'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+        } catch (error) {
+            console.error('Erro ao inicializar gráficos:', error);
+        }
+    }
+
     // Funções de CRUD
     async function registrarCulto() {
         try {
+            if (!elementos.cultoForm) return;
+            
             elementos.loadingOverlay.style.display = 'flex';
             
             // Preparar dados do culto
@@ -1830,7 +1870,7 @@
                 tipo_culto: elementos.tipoCulto.value,
                 hora_inicio: elementos.horaInicio.value,
                 hora_termino: elementos.horaTermino.value,
-                tempo_ministerio: parseInt(elementos.tempoMinisterio.value),
+                tempo_ministerio: parseInt(elementos.tempoMinisterio.value) || 0,
                 homens: parseInt(elementos.homens.value) || 0,
                 mulheres: parseInt(elementos.mulheres.value) || 0,
                 criancas: parseInt(elementos.criancas.value) || 0,
@@ -1844,38 +1884,16 @@
             if (!estado.usandoLocalStorage) {
                 // Tentar salvar no Supabase
                 try {
-                    const { data, error: errorCulto } = await supabase
+                    const { data, error } = await supabase
                         .from('cultos')
                         .insert([cultoData])
                         .select()
                         .single();
                     
-                    if (errorCulto) throw errorCulto;
+                    if (error) throw error;
+                    
                     novoCulto = data;
-                    
-                    // Preparar escalas
-                    const escalasData = [
-                        { culto_id: novoCulto.id, departamento: 'Diaconato', nomes: elementos.diaconato.value },
-                        { culto_id: novoCulto.id, departamento: 'Departamento Infantil', nomes: elementos.infantil.value },
-                        { culto_id: novoCulto.id, departamento: 'Conselheiros', nomes: elementos.conselheiros.value },
-                        { culto_id: novoCulto.id, departamento: 'Departamento de Música', nomes: elementos.musica.value },
-                        { culto_id: novoCulto.id, departamento: 'Mídia', nomes: elementos.midia.value }
-                    ];
-                    
-                    // Inserir escalas
-                    const { error: errorEscalas } = await supabase
-                        .from('escalas')
-                        .insert(escalasData);
-                    
-                    if (errorEscalas) throw errorEscalas;
-                    
-                    // Adicionar escalas ao estado local
-                    escalasData.forEach(escala => {
-                        estado.escalas.push({
-                            ...escala,
-                            id: Date.now() + Math.random()
-                        });
-                    });
+                    console.log('Culto salvo no Supabase:', novoCulto);
                     
                 } catch (supabaseError) {
                     console.warn('Erro ao salvar no Supabase, usando localStorage:', supabaseError);
@@ -1895,35 +1913,25 @@
                     id: novoId
                 };
                 
-                // Adicionar escalas
-                const escalasData = [
-                    { id: Date.now() + 1, culto_id: novoId, departamento: 'Diaconato', nomes: elementos.diaconato.value },
-                    { id: Date.now() + 2, culto_id: novoId, departamento: 'Departamento Infantil', nomes: elementos.infantil.value },
-                    { id: Date.now() + 3, culto_id: novoId, departamento: 'Conselheiros', nomes: elementos.conselheiros.value },
-                    { id: Date.now() + 4, culto_id: novoId, departamento: 'Departamento de Música', nomes: elementos.musica.value },
-                    { id: Date.now() + 5, culto_id: novoId, departamento: 'Mídia', nomes: elementos.midia.value }
-                ];
-                
-                // Adicionar ao estado local
-                estado.cultos.unshift(novoCulto);
-                escalasData.forEach(escala => estado.escalas.push(escala));
-                
-                // Salvar no localStorage
-                salvarNoLocalStorage();
-            } else {
-                // Adicionar ao estado local (já adicionado acima para Supabase)
-                estado.cultos.unshift(novoCulto);
+                console.log('Culto salvo no localStorage:', novoCulto);
             }
+            
+            // Adicionar ao estado local
+            estado.cultos.unshift(novoCulto);
+            
+            // Salvar no localStorage sempre (como backup)
+            salvarNoLocalStorage();
             
             // Limpar formulário
             elementos.cultoForm.reset();
-            elementos.totalPresentes.value = '';
+            if (elementos.totalPresentes) elementos.totalPresentes.value = '';
             
             // Mostrar mensagem de sucesso
             mostrarToast('Culto registrado com sucesso!', 'success');
             
             // Ir para o dashboard
-            document.querySelector('[href="#dashboard"]').click();
+            const dashboardTab = document.querySelector('[href="#dashboard"]');
+            if (dashboardTab) dashboardTab.click();
             
             // Atualizar dashboard
             carregarDashboard();
@@ -1936,7 +1944,196 @@
         }
     }
 
-    // ... [restante do código permanece igual]
+    // Funções globais
+    window.verDetalhesCulto = function(id) {
+        try {
+            const culto = estado.cultos.find(c => c.id === id);
+            if (!culta) {
+                mostrarToast('Culto não encontrado', 'error');
+                return;
+            }
+            
+            const totalPresentes = (culta.homens || 0) + (culta.mulheres || 0) + (culta.criancas || 0);
+            const diaFormatado = formatarDia(culta.dia_semana);
+            const dataFormatada = formatarData(culta.data_culto);
+            
+            // Buscar escalas deste culto
+            const escalasCulto = estado.escalas.filter(e => e.culto_id === id);
+            
+            let escalasHTML = '';
+            if (escalasCulto.length > 0) {
+                escalasCulto.forEach(escala => {
+                    escalasHTML += `<p><strong>${escala.departamento}:</strong> ${escala.nomes}</p>`;
+                });
+            } else {
+                escalasHTML = '<p>Nenhuma escala registrada para este culto.</p>';
+            }
+            
+            const modalContent = document.getElementById('modal-detalhes-content');
+            if (modalContent) {
+                modalContent.innerHTML = `
+                    <div style="margin-bottom: 20px;">
+                        <p><strong>Data:</strong> ${dataFormatada} (${diaFormatado})</p>
+                        <p><strong>Tipo de Culto:</strong> ${culta.tipo_culto}</p>
+                        <p><strong>Horário:</strong> ${culta.hora_inicio} às ${culta.hora_termino}</p>
+                        <p><strong>Tempo de Ministração:</strong> ${culta.tempo_ministerio} minutos</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">Público Presente</h4>
+                        <p><strong>Homens:</strong> ${culta.homens || 0}</p>
+                        <p><strong>Mulheres:</strong> ${culta.mulheres || 0}</p>
+                        <p><strong>Crianças:</strong> ${culta.criancas || 0}</p>
+                        <p><strong>Total:</strong> ${totalPresentes} pessoas</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">Liderança</h4>
+                        <p><strong>Ministro:</strong> ${culta.ministro}</p>
+                        <p><strong>Dirigente:</strong> ${culta.dirigente}</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">Equipes Escaladas</h4>
+                        ${escalasHTML}
+                    </div>
+                    
+                    ${culta.observacoes ? `
+                    <div>
+                        <h4 style="color: var(--primary); margin-bottom: 10px;">Observações</h4>
+                        <p>${culta.observacoes}</p>
+                    </div>
+                    ` : ''}
+                `;
+            }
+            
+            // Mostrar modal
+            const modal = document.getElementById('modal-detalhes');
+            if (modal) modal.classList.add('active');
+            
+        } catch (error) {
+            console.error('Erro ao mostrar detalhes do culto:', error);
+            mostrarToast('Erro ao carregar detalhes', 'error');
+        }
+    };
+
+    window.excluirCulto = function(id) {
+        if (!confirm('Tem certeza que deseja excluir este culto? Esta ação não pode ser desfeita.')) {
+            return;
+        }
+        
+        try {
+            elementos.loadingOverlay.style.display = 'flex';
+            
+            // Remover do estado local
+            estado.cultos = estado.cultos.filter(c => c.id !== id);
+            estado.escalas = estado.escalas.filter(e => e.culto_id !== id);
+            
+            // Tentar remover do Supabase
+            if (!estado.usandoLocalStorage) {
+                supabase
+                    .from('cultos')
+                    .delete()
+                    .eq('id', id)
+                    .then(({ error }) => {
+                        if (error) console.warn('Erro ao excluir do Supabase:', error);
+                    });
+            }
+            
+            // Salvar no localStorage
+            salvarNoLocalStorage();
+            
+            // Atualizar interface
+            carregarDashboard();
+            
+            // Se estiver na página de histórico, recarregar
+            if (document.getElementById('historico').classList.contains('active')) {
+                carregarHistorico();
+            }
+            
+            mostrarToast('Culto excluído com sucesso!', 'success');
+            
+        } catch (error) {
+            console.error('Erro ao excluir culto:', error);
+            mostrarToast('Erro ao excluir culto', 'error');
+        } finally {
+            elementos.loadingOverlay.style.display = 'none';
+        }
+    };
+
+    // Adicionar função para carregar histórico
+    function carregarHistorico() {
+        try {
+            const historicoCultos = document.getElementById('historico-cultos');
+            if (!historicoCultos) return;
+            
+            historicoCultos.innerHTML = '';
+            
+            if (estado.cultos.length === 0) {
+                historicoCultos.innerHTML = `
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 30px;">
+                            <i class="fas fa-history" style="font-size: 2rem; color: var(--gray); margin-bottom: 10px; display: block;"></i>
+                            <p>Nenhum culto registrado ainda.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            estado.cultos.forEach(culto => {
+                const totalPresentes = (culto.homens || 0) + (culto.mulheres || 0) + (culto.criancas || 0);
+                const diaFormatado = formatarDia(culto.dia_semana);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatarData(culto.data_culto)}</td>
+                    <td>${diaFormatado}</td>
+                    <td>${culto.tipo_culto}</td>
+                    <td><strong>${totalPresentes}</strong></td>
+                    <td>${culto.hora_inicio}</td>
+                    <td>${culto.hora_termino}</td>
+                    <td>${culto.ministro}</td>
+                    <td>${culto.dirigente}</td>
+                    <td>
+                        <button class="btn" style="padding: 5px 10px; font-size: 0.9rem;" onclick="verDetalhesCulto(${culto.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-danger" style="padding: 5px 10px; font-size: 0.9rem;" onclick="excluirCulto(${culto.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                historicoCultos.appendChild(row);
+            });
+            
+        } catch (error) {
+            console.error('Erro ao carregar histórico:', error);
+            mostrarToast('Erro ao carregar histórico', 'error');
+        }
+    }
+
+    // Inicializar outras funções quando necessário
+    function carregarEscalas() {
+        // Implementação básica para escalas
+        console.log('Carregando escalas...');
+    }
+
+    function carregarMembros() {
+        // Implementação básica para membros
+        console.log('Carregando membros...');
+    }
+
+    function carregarRelatorios() {
+        // Implementação básica para relatórios
+        console.log('Carregando relatórios...');
+    }
+
+    function carregarConfiguracoes() {
+        // Implementação básica para configurações
+        console.log('Carregando configurações...');
+    }
 </script>
 </body>
 </html>
+
