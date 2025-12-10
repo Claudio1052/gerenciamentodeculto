@@ -638,8 +638,9 @@
 </div>
 <div class="modal" id="modal-escala" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:1000;">
     <div class="modal-content" style="background:var(--bg-card); padding:30px; border-radius:var(--radius); width:90%; max-width:1000px; max-height:80vh; overflow-y:auto; box-shadow:var(--shadow);">
-        <h3 class="section-title" style="margin-bottom:20px;">Nova Escala</h3>
+        <h3 class="section-title" style="margin-bottom:20px;">Nova / Editar Escala</h3>
         <form id="form-escala">
+            <input type="hidden" id="edit-date">
             <div class="input-group">
                 <label for="data-escala">Data da Escala *</label>
                 <input type="date" id="data-escala" class="input-control" required>
@@ -731,7 +732,7 @@
             try {
                 const [resCultos, resEscalas, resMembros] = await Promise.all([
                     supabase.from('cultos').select('*').order('data_culto', { ascending: false }),
-                    supabase.from('escalas').select('*, cultos(data_culto, tipo_culto)'),
+                    supabase.from('escalas').select('*'),
                     supabase.from('membros').select('*').order('nome')
                 ]);
                 estado.cultos = resCultos.data || [];
@@ -1055,13 +1056,13 @@ function editarMembro(id) {
         
             container.innerHTML = '';
             const filtroData = document.getElementById('filtro-data-escala')?.value || '';
-            const escalasFiltradas = filtroData ? estado.escalas.filter(e => (e.data_escala || e.cultos?.data_culto) === filtroData) : estado.escalas;
+            const escalasFiltradas = filtroData ? estado.escalas.filter(e => e.data_escala === filtroData) : estado.escalas;
             // Group by date
             const groups = {};
             escalasFiltradas.forEach(e => {
-              const date = e.data_escala || e.cultos?.data_culto;
+              const date = e.data_escala;
               if (!date) return;
-              if (!groups[date]) groups[date] = { escalas: [], tipo: e.cultos?.tipo_culto || 'Planejada' };
+              if (!groups[date]) groups[date] = { escalas: [] };
               groups[date].escalas.push(e);
             });
             const sortedDates = Object.keys(groups).sort((a,b) => new Date(b) - new Date(a)).slice(0, filtroData ? undefined : 6);
@@ -1071,7 +1072,8 @@ function editarMembro(id) {
               card.className = 'card';
               card.innerHTML = `
                   <div style="font-weight:600; margin-bottom:10px; color:var(--primary); border-bottom:1px solid var(--border-color); padding-bottom:5px;">
-                      ${new Date(date).toLocaleDateString('pt-BR')} - Escala ${g.tipo}
+                      ${new Date(date).toLocaleDateString('pt-BR')} - Escala
+                      <button class="btn btn-secondary" style="float:right; padding:5px 10px;" onclick="editarEscala('${date}')"><i class="fas fa-edit"></i> Editar</button>
                   </div>
                   ${g.escalas.map(e => `
                       <div style="font-size:0.9rem; margin-bottom:5px; display:flex; justify-content:space-between;">
@@ -1242,9 +1244,6 @@ function renderMembros() {
             document.getElementById('menu-toggle').addEventListener('click', () => {
                 document.getElementById('sidebar').classList.toggle('active');
             });
-            // Filtro data escalas
-            const filtroDataEscala = document.getElementById('filtro-data-escala');
-            if (filtroDataEscala) filtroDataEscala.addEventListener('change', renderEscalas);
         }
         function calcularTotal() {
             const h = parseInt(document.getElementById('homens').value) || 0;
@@ -1363,6 +1362,7 @@ function renderMembros() {
         window.fecharModalEscala = () => {
             document.getElementById('modal-escala').style.display = 'none';
             document.getElementById('form-escala').reset();
+            document.getElementById('edit-date').value = '';
         };
         window.mostrarToast = (msg, tipo) => {
             const t = document.createElement('div');
@@ -1381,7 +1381,12 @@ function renderMembros() {
                 document.getElementById('loading-overlay').style.display = 'none';
                 return;
             }
+            const editDate = document.getElementById('edit-date').value;
             try {
+                if (editDate) {
+                    const { error: deleteError } = await supabase.from('escalas').delete().eq('data_escala', editDate);
+                    if (deleteError) throw deleteError;
+                }
                 const escalasInputs = [
                     { dept: 'Diaconato', id: 'diaconato-escala' },
                     { dept: 'Música', id: 'musica-escala' },
@@ -1413,6 +1418,7 @@ function renderMembros() {
                     if (error) throw error;
                 }
                 mostrarToast('Escala salva com sucesso!', 'success');
+                document.getElementById('edit-date').value = '';
                 fecharModalEscala();
                 await carregarDados();
             } catch (error) {
@@ -1421,6 +1427,43 @@ function renderMembros() {
             } finally {
                 document.getElementById('loading-overlay').style.display = 'none';
             }
+        }
+        function editarEscala(date) {
+            document.getElementById('modal-escala').style.display = 'flex';
+            document.getElementById('data-escala').value = date;
+            document.getElementById('edit-date').value = date;
+            // Reset selects
+            const selects = document.querySelectorAll('#form-escala select');
+            selects.forEach(s => {
+                Array.from(s.options).forEach(o => o.selected = false);
+            });
+            // Load existing
+            const escalasDate = estado.escalas.filter(e => e.data_escala === date);
+            escalasDate.forEach(e => {
+                let deptId;
+                switch(e.departamento) {
+                    case 'Diaconato': deptId = 'diaconato-escala'; break;
+                    case 'Música': deptId = 'musica-escala'; break;
+                    case 'Mídia': deptId = 'midia-escala'; break;
+                    case 'Recepção': deptId = 'recepcao-escala'; break;
+                    case 'Jovens': deptId = 'jovens-escala'; break;
+                    case 'Transito': deptId = 'transito-escala'; break;
+                    case 'Concelheiros': deptId = 'concelheiros-escala'; break;
+                    case 'Livraria': deptId = 'livraria-escala'; break;
+                    case 'Ministros': deptId = 'ministros-escala'; break;
+                    case 'Infantil 0-2': deptId = 'infantil-0-2'; break;
+                    case 'Infantil 3-5': deptId = 'infantil-3-5'; break;
+                    case 'Infantil 6-8': deptId = 'infantil-6-8'; break;
+                    case 'Infantil 9-12': deptId = 'infantil-9-12'; break;
+                }
+                if (deptId) {
+                    const select = document.getElementById(deptId);
+                    const nomes = e.nomes.split(', ');
+                    Array.from(select.options).forEach(opt => {
+                        if (nomes.includes(opt.value)) opt.selected = true;
+                    });
+                }
+            });
         }
 // Máscara de telefone
 document.getElementById('membro-telefone')?.addEventListener('input', function (e) {
