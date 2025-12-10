@@ -6,10 +6,8 @@
     <title>Gestão Ministerial | Verbo da Vida</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
- 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
- 
     <style>
         /* Variáveis de Tema Padrão (Light Mode) */
         :root {
@@ -145,7 +143,7 @@
             margin-bottom: 20px;
             color: var(--primary-dark);
         }
-     
+    
         /* Cards Dashboard */
         .dashboard-grid {
             display: grid;
@@ -182,7 +180,7 @@
             flex-direction: column;
             justify-content: center;
         }
-     
+    
         /* Forms */
         .form-grid {
             display: grid;
@@ -276,7 +274,7 @@
             margin-bottom: 15px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-     
+    
         /* Toast */
         #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 2100; }
         .toast {
@@ -303,7 +301,6 @@
     </style>
 </head>
 <body data-theme="light">
- 
     <div class="connection-status status-error" id="connection-status">
         <i class="fas fa-sync fa-spin"></i> Testando Conexão...
     </div>
@@ -314,7 +311,7 @@
     <div class="wrapper">
         <nav class="sidebar" id="sidebar">
             <div class="brand"><i class="fas fa-church"></i> VerboApp</div>
-         
+        
             <ul class="nav-menu">
                 <li><a href="#dashboard" class="active" id="dashboard-tab"><i class="fas fa-chart-line"></i> Dashboard <span class="badge" id="dashboard-badge">0</span></a></li>
                 <li><a href="#registro" id="registro-tab"><i class="fas fa-plus-circle"></i> Novo Culto</a></li>
@@ -323,7 +320,7 @@
                 <li><a href="#membros" id="membros-tab"><i class="fas fa-address-book"></i> Membros</a></li>
                 <li><a href="#configuracoes" id="configuracoes-tab"><i class="fas fa-cog"></i> Configurações</a></li>
             </ul>
-         
+        
             <div style="margin-top: 50px;">
                 <button class="btn btn-secondary" style="width:100%;" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
             </div>
@@ -343,7 +340,7 @@
             <div id="dashboard" class="tab-content active">
                 <div class="dashboard-grid" id="dashboard-cards">
                     </div>
-             
+            
                 <div class="chart-grid">
                     <div class="section">
                         <h3 class="section-title">Tendência de Público</h3>
@@ -376,7 +373,7 @@
                 <div class="section">
                     <h3 class="section-title"><i class="fas fa-plus-circle"></i> Registrar Novo Culto</h3>
                     <form id="culto-form">
-                     
+                    
                         <h4 style="margin-top:20px; margin-bottom:10px; color:var(--primary);">Informações Básicas</h4>
                         <div class="form-grid">
                             <div class="input-group">
@@ -406,13 +403,13 @@
                                 </select>
                             </div>
                         </div>
-                     
+                    
                         <div class="form-grid">
                             <div class="input-group"><label for="hora-inicio">Início</label><input type="time" id="hora-inicio" class="input-control" value="19:30" required></div>
                             <div class="input-group"><label for="hora-termino">Término</label><input type="time" id="hora-termino" class="input-control" value="21:30" required></div>
                             <div class="input-group"><label for="tempo-ministerio">Duração Palavra (min)</label><input type="number" id="tempo-ministerio" class="input-control" value="60"></div>
                         </div>
-                     
+                    
                         <h4 style="margin-top:30px; margin-bottom:10px; color:var(--primary);">Contagem de Pessoas</h4>
                         <div class="form-grid">
                             <div class="input-group"><label for="homens">Homens</label><input type="number" id="homens" class="input-control" value="0"></div>
@@ -425,7 +422,7 @@
                             <div class="input-group"><label for="ministro">Ministro da Palavra</label><input type="text" id="ministro" class="input-control" required></div>
                             <div class="input-group"><label for="dirigente">Dirigente do Culto</label><input type="text" id="dirigente" class="input-control"></div>
                         </div>
-                     
+                    
                         <div class="form-grid">
                             <div class="input-group"><label for="diaconato">Diaconato (Equipe)</label><select id="diaconato" class="input-control" multiple></select></div>
                             <div class="input-group"><label for="infantil">Infantil (Equipe)</label><select id="infantil" class="input-control" multiple></select></div>
@@ -442,12 +439,12 @@
                             <div class="input-group"><label for="livraria">Livraria (Equipe)</label><select id="livraria" class="input-control" multiple></select></div>
                             <div class="input-group"><label for="ministros">Ministros (Equipe)</label><select id="ministros" class="input-control" multiple></select></div>
                         </div>
-                     
+                    
                         <div class="input-group">
                             <label for="observacoes">Observações</label>
                             <textarea id="observacoes" class="input-control" rows="3" placeholder="Informações adicionais, ocorrências..."></textarea>
                         </div>
-                     
+                    
                         <div style="margin-top:30px; display:flex; gap:15px;">
                             <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Registro</button>
                             <button type="button" class="btn btn-secondary" onclick="document.getElementById('culto-form').reset()"><i class="fas fa-redo"></i> Limpar</button>
@@ -455,7 +452,7 @@
                     </form>
                 </div>
             </div>
-         
+        
             <div id="historico" class="tab-content">
                 <div class="section">
                     <h3 class="section-title"><i class="fas fa-history"></i> Histórico Completo</h3>
@@ -465,7 +462,20 @@
             </div>
             <div id="escalas" class="tab-content">
                 <div class="section">
-                    <h3 class="section-title"><i class="fas fa-clipboard-list"></i> Escalas Recentes</h3>
+                    <h3 class="section-title"><i class="fas fa-clipboard-list"></i> Escalas</h3>
+                    <!-- Filtros -->
+                    <div style="margin-bottom: 25px; background: var(--bg-main); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow);">
+                        <h4 style="margin-bottom: 15px; color: var(--primary);">Filtros</h4>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="filtro-data-escala">Data</label>
+                                <input type="date" id="filtro-data-escala" class="input-control">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="openModalEscala()" style="margin-bottom:20px;">
+                        Nova Escala
+                    </button>
                     <div class="dashboard-grid" id="lista-escalas">
                         </div>
                 </div>
@@ -473,7 +483,7 @@
             <div id="membros" class="tab-content">
     <div class="section">
         <h3 class="section-title">Gestão de Membros</h3>
-      
+     
         <!-- Filtros -->
         <div style="margin-bottom: 25px; background: var(--bg-main); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow);">
             <h4 style="margin-bottom: 15px; color: var(--primary);">Filtros</h4>
@@ -532,7 +542,7 @@
             <div id="configuracoes" class="tab-content">
                 <div class="section" style="max-width: 600px; margin: 0 auto;">
                     <h3 class="section-title"><i class="fas fa-cog"></i> Configurações do Sistema</h3>
-                 
+                
                     <div class="setting-item">
                         <div class="setting-info">
                             <h4>Modo Escuro (Dark Mode)</h4>
@@ -550,7 +560,7 @@
                         </div>
                         <button class="btn btn-secondary" onclick="exportData()"><i class="fas fa-download"></i> Exportar</button>
                     </div>
-                 
+                
                     <div class="setting-item" style="border-bottom: none;">
                         <div class="setting-info">
                             <h4 style="color: var(--danger);">Resetar Dados</h4>
@@ -616,7 +626,7 @@
                      <option value="Concelheiros">Concelheiros</option>
                      <option value="Livraria">Livraria</option>
                      <option value="Ministros">Ministros</option>
-   
+  
                 </select>
             </div>
             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
@@ -626,13 +636,46 @@
         </form>
     </div>
 </div>
- 
+<div class="modal" id="modal-escala" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:1000;">
+    <div class="modal-content" style="background:var(--bg-card); padding:30px; border-radius:var(--radius); width:90%; max-width:800px; box-shadow:var(--shadow); overflow:auto;">
+        <h3 class="section-title" style="margin-bottom:20px;">Nova Escala</h3>
+        <form id="form-escala">
+            <div class="input-group">
+                <label for="data-escala">Data da Escala *</label>
+                <input type="date" id="data-escala" class="input-control" required>
+            </div>
+            <h4 style="margin-top:30px; margin-bottom:10px; color:var(--primary);">Equipes</h4>
+            <div class="form-grid">
+                <div class="input-group"><label for="diaconato-escala">Diaconato</label><select id="diaconato-escala" class="input-control" multiple></select></div>
+                <div class="input-group"><label for="musica-escala">Música</label><select id="musica-escala" class="input-control" multiple></select></div>
+                <div class="input-group"><label for="midia-escala">Mídia</label><select id="midia-escala" class="input-control" multiple></select></div>
+                <div class="input-group"><label for="recepcao-escala">Recepção</label><select id="recepcao-escala" class="input-control" multiple></select></div>
+                <div class="input-group"><label for="jovens-escala">Jovens</label><select id="jovens-escala" class="input-control" multiple></select></div>
+                <div class="input-group"><label for="transito-escala">Transito</label><select id="transito-escala" class="input-control" multiple></select></div>
+                <div class="input-group"><label for="concelheiros-escala">Concelheiros</label><select id="concelheiros-escala" class="input-control" multiple></select></div>
+                <div class="input-group"><label for="livraria-escala">Livraria</label><select id="livraria-escala" class="input-control" multiple></select></div>
+                <div class="input-group"><label for="ministros-escala">Ministros</label><select id="ministros-escala" class="input-control" multiple></select></div>
+            </div>
+            <h4 style="margin-top:30px; margin-bottom:10px; color:var(--primary);">Infantil por Salas</h4>
+            <div class="form-grid">
+                <div class="input-group"><label for="infantil-0-2">0 a 2 anos</label><select id="infantil-0-2" class="input-control" multiple></select></div>
+                <div class="input-group"><label for="infantil-3-5">3 a 5 anos</label><select id="infantil-3-5" class="input-control" multiple></select></div>
+                <div class="input-group"><label for="infantil-6-8">6 a 8 anos</label><select id="infantil-6-8" class="input-control" multiple></select></div>
+                <div class="input-group"><label for="infantil-9-12">9 a 12 anos</label><select id="infantil-9-12" class="input-control" multiple></select></div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+                <button type="button" class="btn btn-secondary" onclick="fecharModalEscala()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar Escala</button>
+            </div>
+        </form>
+    </div>
+</div>
     <div id="toast-container"></div>
     <script>
         // --- 1. CONFIGURAÇÃO SUPABASE (CORRIGIDO) ---
         const SUPABASE_URL = 'https://wzzyxbkhmlfilvlihvvl.supabase.co';
         const SUPABASE_KEY = 'sb_publishable__r9k3LzISUD3NwICOhOklw_mf1IprWw';
-     
+    
         // Criando o cliente Supabase
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         // --- 2. ESTADO GLOBAL ---
@@ -648,14 +691,14 @@
             // Aplica tema
             document.body.setAttribute('data-theme', estado.theme);
             document.getElementById('theme-toggle').checked = estado.theme === 'dark';
-         
+        
             cacheDOM();
             bindEvents();
-         
+        
             // Tenta a conexão e carrega os dados
             await checkConnection();
             await carregarDados();
-         
+        
             document.getElementById('loading-overlay').style.display = 'none';
         });
         // --- 4. FUNÇÕES DE CONEXÃO E DADOS ---
@@ -664,13 +707,13 @@
             statusEl.classList.remove('status-error');
             statusEl.classList.add('status-ok');
             statusEl.innerHTML = '<i class="fas fa-sync fa-spin"></i> Testando Conexão...';
-         
+        
             try {
                 // Tenta fazer uma consulta simples para validar a conexão
                 const { error } = await supabase.from('cultos').select('id', { count: 'exact', head: true });
-             
+            
                 if (error) throw error;
-             
+            
                 statusEl.innerHTML = '<i class="fas fa-check-circle"></i> Supabase Conectado';
                 statusEl.classList.remove('status-error');
                 statusEl.classList.add('status-ok');
@@ -684,11 +727,11 @@
         }
         async function carregarDados() {
             document.getElementById('loading-text').innerText = "Carregando dados...";
-         
+        
             try {
                 const [resCultos, resEscalas, resMembros] = await Promise.all([
                     supabase.from('cultos').select('*').order('data_culto', { ascending: false }),
-                    supabase.from('escalas').select('*'),
+                    supabase.from('escalas').select('*, cultos(data_culto, tipo_culto)'),
                     supabase.from('membros').select('*').order('nome')
                 ]);
                 estado.cultos = resCultos.data || [];
@@ -696,7 +739,7 @@
                 estado.membros = resMembros.data || [];
                 populateDepartamentosSelects();
                 atualizarUI();
-             
+            
             } catch (err) {
                 console.error("Erro ao carregar dados:", err);
                 mostrarToast('Erro ao carregar dados do servidor.', 'error');
@@ -706,7 +749,7 @@
             e.preventDefault();
             document.getElementById('loading-overlay').style.display = 'flex';
             document.getElementById('loading-text').innerText = "Salvando Culto...";
-         
+        
             const novoCulto = {
                 data_culto: document.getElementById('data-culto').value,
                 dia_semana: document.getElementById('dia-semana').value,
@@ -746,6 +789,7 @@
                     .filter(s => s.val && s.val.trim() !== "")
                     .map(s => ({
                         culto_id: culto.id,
+                        data_escala: novoCulto.data_culto,
                         departamento: s.dept,
                         nomes: s.val
                     }));
@@ -756,7 +800,7 @@
                 mostrarToast('Culto registrado com sucesso!', 'success');
                 document.getElementById('culto-form').reset();
                 document.getElementById('total-presentes').value = 0;
-             
+            
                 // Recarregar e navegar
                 await carregarDados();
                 document.getElementById('dashboard-tab').click();
@@ -767,16 +811,16 @@
                 document.getElementById('loading-overlay').style.display = 'none';
             }
         }
-     
+    
         async function deletarCulto(id) {
             if(!confirm('Tem certeza que deseja excluir este registro?')) return;
             document.getElementById('loading-overlay').style.display = 'flex';
             document.getElementById('loading-text').innerText = "Excluindo registro...";
-         
+        
             try {
                 const { error } = await supabase.from('cultos').delete().eq('id', id);
                 if (error) throw error;
-             
+            
                 mostrarToast('Culto removido com sucesso.', 'success');
                 await carregarDados();
             } catch (err) {
@@ -858,7 +902,7 @@ function editarMembro(id) {
             if(!confirm('Excluir membro? Esta ação é permanente.')) return;
             document.getElementById('loading-overlay').style.display = 'flex';
             document.getElementById('loading-text').innerText = "Excluindo membro...";
-         
+        
             try {
                 const { error } = await supabase.from('membros').delete().eq('id', id);
                 if (!error) {
@@ -886,7 +930,7 @@ function editarMembro(id) {
             const totalPublico = estado.cultos.reduce((acc, c) => acc + (c.homens + c.mulheres + c.criancas), 0);
             const mediaPublico = totalCultos > 0 ? Math.round(totalPublico / totalCultos) : 0;
             const totalMembros = estado.membros.length;
-         
+        
             // Cards
             document.getElementById('dashboard-cards').innerHTML = `
                 <div class="card card-info">
@@ -919,7 +963,7 @@ function editarMembro(id) {
         }
         function renderTimeline() {
             const tbody = document.getElementById('timeline-events');
-         
+        
             // Renderiza apenas os 5 últimos cultos
             tbody.innerHTML = estado.cultos.slice(0, 5).map(c => `
                 <tr style="border-bottom:1px solid #eee;">
@@ -956,7 +1000,7 @@ function editarMembro(id) {
             const totalH = estado.cultos.reduce((a,c)=>a+c.homens,0);
             const totalM = estado.cultos.reduce((a,c)=>a+c.mulheres,0);
             const totalC = estado.cultos.reduce((a,c)=>a+c.criancas,0);
-         
+        
             const ctxDemo = document.getElementById('demographicsChart').getContext('2d');
             if(estado.charts.demo) estado.charts.demo.destroy();
             estado.charts.demo = new Chart(ctxDemo, {
@@ -1008,29 +1052,38 @@ function editarMembro(id) {
         function renderEscalas() {
             const container = document.getElementById('lista-escalas');
             if(!container) return;
-         
+        
             container.innerHTML = '';
-            const ultimosCultos = estado.cultos.slice(0, 6);
-            ultimosCultos.forEach(culto => {
-                const escalasCulto = estado.escalas.filter(e => e.culto_id === culto.id);
-                if(escalasCulto.length === 0) return;
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <div style="font-weight:600; margin-bottom:10px; color:var(--primary); border-bottom:1px solid var(--border-color); padding-bottom:5px;">
-                        ${new Date(culto.data_culto).toLocaleDateString('pt-BR')} - ${culto.tipo_culto}
-                    </div>
-                    ${escalasCulto.map(e => `
-                        <div style="font-size:0.9rem; margin-bottom:5px; display:flex; justify-content:space-between;">
-                            <span style="font-weight:600; color:var(--gray);">${e.departamento}:</span>
-                            <span style="max-width: 60%; text-align: right;">${e.nomes}</span>
-                        </div>
-                    `).join('')}
-                `;
-                container.appendChild(card);
+            const filtroData = document.getElementById('filtro-data-escala')?.value || '';
+            const escalasFiltradas = filtroData ? estado.escalas.filter(e => (e.data_escala || e.cultos?.data_culto) === filtroData) : estado.escalas;
+            // Group by date
+            const groups = {};
+            escalasFiltradas.forEach(e => {
+              const date = e.data_escala || e.cultos?.data_culto;
+              if (!date) return;
+              if (!groups[date]) groups[date] = { escalas: [], tipo: e.cultos?.tipo_culto || 'Planejada' };
+              groups[date].escalas.push(e);
+            });
+            const sortedDates = Object.keys(groups).sort((a,b) => new Date(b) - new Date(a)).slice(0, filtroData ? undefined : 6);
+            sortedDates.forEach(date => {
+              const g = groups[date];
+              const card = document.createElement('div');
+              card.className = 'card';
+              card.innerHTML = `
+                  <div style="font-weight:600; margin-bottom:10px; color:var(--primary); border-bottom:1px solid var(--border-color); padding-bottom:5px;">
+                      ${new Date(date).toLocaleDateString('pt-BR')} - Escala ${g.tipo}
+                  </div>
+                  ${g.escalas.map(e => `
+                      <div style="font-size:0.9rem; margin-bottom:5px; display:flex; justify-content:space-between;">
+                          <span style="font-weight:600; color:var(--gray);">${e.departamento}:</span>
+                          <span style="max-width: 60%; text-align: right;">${e.nomes}</span>
+                      </div>
+                  `).join('')}
+              `;
+              container.appendChild(card);
             });
         }
-     
+    
         function calcularIdade(dataNasc) {
     if (!dataNasc) return '';
     const [y, m, d] = dataNasc.split('-').map(Number);
@@ -1147,6 +1200,8 @@ function renderMembros() {
             if(formCulto) formCulto.addEventListener('submit', salvarCulto);
             const formMembro = document.getElementById('form-membro');
             if(formMembro) formMembro.addEventListener('submit', salvarMembro);
+            const formEscala = document.getElementById('form-escala');
+            if(formEscala) formEscala.addEventListener('submit', salvarEscala);
             // Soma automática
             ['homens', 'mulheres', 'criancas'].forEach(id => {
                 const el = document.getElementById(id);
@@ -1155,6 +1210,8 @@ function renderMembros() {
             // Data de hoje
             const dateInput = document.getElementById('data-culto');
             if(dateInput) dateInput.valueAsDate = new Date();
+            const dateEscala = document.getElementById('data-escala');
+            if(dateEscala) dateEscala.valueAsDate = new Date();
         }
         function bindEvents() {
             // Navegação por Tabs
@@ -1164,19 +1221,19 @@ function renderMembros() {
                     // UI de Navegação
                     document.querySelectorAll('.nav-menu a').forEach(l => l.classList.remove('active'));
                     link.classList.add('active');
-                 
+                
                     // UI de Conteúdo
                     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
                     const targetId = link.getAttribute('href').substring(1);
                     document.getElementById(targetId).classList.add('active');
-                 
+                
                     // Atualiza título
                     document.getElementById('current-title').innerText = link.innerText.split(" ")[0];
                     // Fecha sidebar no mobile
                     if(window.innerWidth < 992) {
                         document.getElementById('sidebar').classList.remove('active');
                     }
-                 
+                
                     // Re-renderiza gráficos ao voltar pro dashboard
                     if(targetId === 'dashboard') renderCharts();
                 });
@@ -1185,6 +1242,9 @@ function renderMembros() {
             document.getElementById('menu-toggle').addEventListener('click', () => {
                 document.getElementById('sidebar').classList.toggle('active');
             });
+            // Filtro data escalas
+            const filtroDataEscala = document.getElementById('filtro-data-escala');
+            if (filtroDataEscala) filtroDataEscala.addEventListener('change', renderEscalas);
         }
         function calcularTotal() {
             const h = parseInt(document.getElementById('homens').value) || 0;
@@ -1222,8 +1282,36 @@ function renderMembros() {
                     select.appendChild(opt);
                 });
             });
+            const escalaDeptMap = {
+                'diaconato-escala': 'Diaconato',
+                'musica-escala': 'Música',
+                'midia-escala': 'Mídia',
+                'recepcao-escala': 'Recepção',
+                'jovens-escala': 'Jovens',
+                'transito-escala': 'Transito',
+                'concelheiros-escala': 'Concelheiros',
+                'livraria-escala': 'Livraria',
+                'ministros-escala': 'Ministros',
+                'infantil-0-2': 'Infantil',
+                'infantil-3-5': 'Infantil',
+                'infantil-6-8': 'Infantil',
+                'infantil-9-12': 'Infantil'
+            };
+            Object.keys(escalaDeptMap).forEach(deptId => {
+                const select = document.getElementById(deptId);
+                if (!select) return;
+                select.innerHTML = '';
+                const deptName = escalaDeptMap[deptId];
+                const membrosDept = estado.membros.filter(m => m.departamentos && m.departamentos.includes(deptName));
+                membrosDept.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.nome;
+                    opt.text = m.nome;
+                    select.appendChild(opt);
+                });
+            });
         }
-     
+    
         // --- Settings Functions ---
         window.toggleDarkMode = (isDark) => {
             const newTheme = isDark ? 'dark' : 'light';
@@ -1256,7 +1344,7 @@ function renderMembros() {
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-         
+        
             mostrarToast('Dados exportados para CSV!', 'success');
         };
         window.logout = () => {
@@ -1269,6 +1357,13 @@ function renderMembros() {
         window.openModalMembro = () => {
             document.getElementById('modal-membro').style.display='flex';
         };
+        window.openModalEscala = () => {
+            document.getElementById('modal-escala').style.display='flex';
+        };
+        window.fecharModalEscala = () => {
+            document.getElementById('modal-escala').style.display = 'none';
+            document.getElementById('form-escala').reset();
+        };
         window.mostrarToast = (msg, tipo) => {
             const t = document.createElement('div');
             t.className = `toast toast-${tipo}`;
@@ -1276,6 +1371,57 @@ function renderMembros() {
             document.getElementById('toast-container').appendChild(t);
             setTimeout(() => t.remove(), 4000);
         };
+        async function salvarEscala(e) {
+            e.preventDefault();
+            document.getElementById('loading-overlay').style.display = 'flex';
+            document.getElementById('loading-text').innerText = "Salvando Escala...";
+            const data_escala = document.getElementById('data-escala').value;
+            if (!data_escala) {
+                mostrarToast('Data obrigatória', 'error');
+                document.getElementById('loading-overlay').style.display = 'none';
+                return;
+            }
+            try {
+                const escalasInputs = [
+                    { dept: 'Diaconato', id: 'diaconato-escala' },
+                    { dept: 'Música', id: 'musica-escala' },
+                    { dept: 'Mídia', id: 'midia-escala' },
+                    { dept: 'Recepção', id: 'recepcao-escala' },
+                    { dept: 'Jovens', id: 'jovens-escala' },
+                    { dept: 'Transito', id: 'transito-escala' },
+                    { dept: 'Concelheiros', id: 'concelheiros-escala' },
+                    { dept: 'Livraria', id: 'livraria-escala' },
+                    { dept: 'Ministros', id: 'ministros-escala' },
+                    { dept: 'Infantil 0-2', id: 'infantil-0-2' },
+                    { dept: 'Infantil 3-5', id: 'infantil-3-5' },
+                    { dept: 'Infantil 6-8', id: 'infantil-6-8' },
+                    { dept: 'Infantil 9-12', id: 'infantil-9-12' }
+                ];
+                const escalasParaSalvar = escalasInputs
+                    .map(s => ({
+                        dept: s.dept,
+                        val: Array.from(document.getElementById(s.id).selectedOptions).map(opt => opt.value).join(', ')
+                    }))
+                    .filter(s => s.val && s.val.trim() !== "")
+                    .map(s => ({
+                        data_escala,
+                        departamento: s.dept,
+                        nomes: s.val
+                    }));
+                if (escalasParaSalvar.length > 0) {
+                    const { error } = await supabase.from('escalas').insert(escalasParaSalvar);
+                    if (error) throw error;
+                }
+                mostrarToast('Escala salva com sucesso!', 'success');
+                fecharModalEscala();
+                await carregarDados();
+            } catch (error) {
+                console.error("Erro ao salvar escala:", error);
+                mostrarToast('Erro ao salvar no banco de dados.', 'error');
+            } finally {
+                document.getElementById('loading-overlay').style.display = 'none';
+            }
+        }
 // Máscara de telefone
 document.getElementById('membro-telefone')?.addEventListener('input', function (e) {
     let v = e.target.value.replace(/\D/g, '');
