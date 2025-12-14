@@ -573,7 +573,7 @@
         </main>
     </div>
     <div class="modal" id="modal-membro" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:1000;">
-    <div class="modal-content" style="background:var(--bg-card); padding:30px; border-radius:var(--radius); width:90%; max-width:500px; box-shadow:var(--shadow);">
+    <div class="modal-content" style="background:var(--bg-card); padding:30px; border-radius:var(--radius); width:90%; max-width:500px; max-height:80vh; overflow-y:auto; box-shadow:var(--shadow);">
         <h3 class="section-title" style="margin-bottom:20px;">Novo / Editar Membro</h3>
         <form id="form-membro">
             <input type="hidden" id="membro-id">
@@ -1168,6 +1168,17 @@ function ehAniversarianteDoMes(dataNasc) {
     const hoje = new Date();
     return hoje.getMonth() === nasc.getMonth();
 }
+function formatarEndereco(m) {
+    let endereco = '';
+    if (m.logradouro) endereco += m.logradouro;
+    if (m.numero) endereco += `, ${m.numero}`;
+    if (m.complemento) endereco += ` (${m.complemento})`;
+    if (m.bairro) endereco += ` - ${m.bairro}`;
+    if (m.localidade) endereco += `, ${m.localidade}`;
+    if (m.uf) endereco += `/${m.uf}`;
+    if (m.cep) endereco += ` (CEP: ${m.cep})`;
+    return endereco.trim() || '-';
+}
 function renderMembros() {
     const container = document.getElementById('membros-table-container');
     if (!container) return;
@@ -1200,15 +1211,17 @@ function renderMembros() {
             Mostrando ${membrosFiltrados.length} de ${estado.membros.length} membros
             ${filtroAniv === 'sim' ? ' — Aniversariantes do mês' : ''}
         </div>
-        <div class="table-responsive">
-            <table class="table" style="width:100%; border-collapse:collapse;">
+        <div class="table-responsive" style="overflow-x: auto;">
+            <table class="table" style="width:100%; border-collapse:collapse; min-width: 1200px;">
                 <thead>
                     <tr style="background:var(--bg-main); text-align:left;">
                         <th style="padding:15px;">Nome</th>
                         <th style="padding:15px;">Idade / Aniversário</th>
                         <th style="padding:15px;">Telefone</th>
+                        <th style="padding:15px;">E-mail</th>
                         <th style="padding:15px;">Departamentos</th>
                         <th style="padding:15px;">Rhema / Ministros</th>
+                        <th style="padding:15px;">Endereço</th>
                         <th style="padding:15px;">Ações</th>
                     </tr>
                 </thead>
@@ -1223,6 +1236,7 @@ function renderMembros() {
                             const nasc = new Date(y, month - 1, day);
                             birthDisplay = nasc.toLocaleDateString('pt-BR', {day: '2-digit', month: 'long'});
                         }
+                        const endereco = formatarEndereco(m);
                         return `
                             <tr style="border-bottom:1px solid var(--border-color); ${ehAniversarianteDoMes(m.nascimento) ? 'background:rgba(39,174,96,0.1);' : ''}">
                                 <td style="padding:15px;">${m.nome} ${iconAniv}</td>
@@ -1231,6 +1245,7 @@ function renderMembros() {
                                     ${idade ? ` (${idade} anos)` : ''}
                                 </td>
                                 <td style="padding:15px;">${m.telefone || '-'}</td>
+                                <td style="padding:15px;">${m.email || '-'}</td>
                                 <td style="padding:15px; font-size:0.9rem;">
                                     ${m.departamentos && m.departamentos.length > 0 ? m.departamentos.join(', ') : '<em style="color:var(--gray)">Sem departamento</em>'}
                                 </td>
@@ -1239,6 +1254,7 @@ function renderMembros() {
                                     ${m.escola_ministros ? 'Ministros' : ''}
                                     ${!m.fez_rhema && !m.escola_ministros ? '-' : ''}
                                 </td>
+                                <td style="padding:15px;">${endereco}</td>
                                 <td style="padding:15px;">
                                     <button class="btn" style="color:var(--primary); background:none; border:none; margin-right:10px;" onclick="editarMembro(${m.id})">
                                         Editar
