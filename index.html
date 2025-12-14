@@ -298,7 +298,6 @@
             .menu-toggle { display: block; }
             .chart-grid { grid-template-columns: 1fr; }
         }
-        .hidden { display: none; }
     </style>
 </head>
 <body data-theme="light">
@@ -319,7 +318,6 @@
                 <li><a href="#historico" id="historico-tab"><i class="fas fa-history"></i> Histórico <span class="badge" id="historico-badge">0</span></a></li>
                 <li><a href="#escalas" id="escalas-tab"><i class="fas fa-clipboard-list"></i> Escalas</a></li>
                 <li><a href="#membros" id="membros-tab"><i class="fas fa-address-book"></i> Membros</a></li>
-                <li><a href="#usuarios" id="usuarios-tab"><i class="fas fa-users"></i> Usuários</a></li>
                 <li><a href="#configuracoes" id="configuracoes-tab"><i class="fas fa-cog"></i> Configurações</a></li>
             </ul>
        
@@ -331,11 +329,11 @@
             <div class="top-bar">
                 <button class="menu-toggle" id="menu-toggle"><i class="fas fa-bars"></i></button>
                 <div class="page-title" id="current-title">Dashboard</div>
-                <div class="user-profile" id="user-profile">
+                <div class="user-profile">
                     <div class="user-avatar">AD</div>
                     <div class="user-info">
-                        <span id="user-name">Admin</span>
-                        <small id="user-role">Coordenador</small>
+                        <span>Admin</span>
+                        <small>Coordenador</small>
                     </div>
                 </div>
             </div>
@@ -475,7 +473,7 @@
                             </div>
                         </div>
                     </div>
-                    <button class="btn btn-primary" id="new-escala-btn" onclick="openModalEscala()" style="margin-bottom:20px;">
+                    <button class="btn btn-primary" onclick="openModalEscala()" style="margin-bottom:20px;">
                         Nova Escala
                     </button>
                     <div class="dashboard-grid" id="lista-escalas">
@@ -541,15 +539,6 @@
         <div id="membros-table-container"></div>
     </div>
 </div>
-            <div id="usuarios" class="tab-content">
-                <div class="section">
-                    <h3 class="section-title"><i class="fas fa-users"></i> Cadastro de Usuários</h3>
-                    <button class="btn btn-primary" onclick="openModalUsuario()" style="margin-bottom:20px;">
-                        Novo Usuário
-                    </button>
-                    <div id="usuarios-table-container"></div>
-                </div>
-            </div>
             <div id="configuracoes" class="tab-content">
                 <div class="section" style="max-width: 600px; margin: 0 auto;">
                     <h3 class="section-title"><i class="fas fa-cog"></i> Configurações do Sistema</h3>
@@ -720,53 +709,6 @@
     </div>
 </div>
     <div id="toast-container"></div>
-    <div class="modal" id="login-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:1000;">
-        <div class="modal-content" style="background:var(--bg-card); padding:30px; border-radius:var(--radius); width:90%; max-width:400px; box-shadow:var(--shadow);">
-            <h3 class="section-title" style="margin-bottom:20px;">Login</h3>
-            <form id="login-form">
-                <div class="input-group">
-                    <label for="login-email">E-mail</label>
-                    <input type="email" id="login-email" class="input-control" required>
-                </div>
-                <div class="input-group">
-                    <label for="login-password">Senha</label>
-                    <input type="password" id="login-password" class="input-control" required>
-                </div>
-                <div style="display:flex; justify-content:flex-end; margin-top:20px;">
-                    <button type="submit" class="btn btn-primary">Entrar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <div class="modal" id="modal-usuario" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; z-index:1000;">
-        <div class="modal-content" style="background:var(--bg-card); padding:30px; border-radius:var(--radius); width:90%; max-width:400px; box-shadow:var(--shadow);">
-            <h3 class="section-title" style="margin-bottom:20px;">Novo / Editar Usuário</h3>
-            <form id="form-usuario">
-                <input type="hidden" id="usuario-id">
-                <div class="input-group">
-                    <label for="usuario-email">E-mail *</label>
-                    <input type="email" id="usuario-email" class="input-control" required>
-                </div>
-                <div class="input-group">
-                    <label for="usuario-password">Senha *</label>
-                    <input type="password" id="usuario-password" class="input-control" required>
-                </div>
-                <div class="input-group">
-                    <label for="usuario-role">Perfil *</label>
-                    <select id="usuario-role" class="input-control" required>
-                        <option value="coordenador">Coordenador</option>
-                        <option value="usuario">Usuário</option>
-                        <option value="lider">Líder</option>
-                        <option value="gerenciador">Gerenciador</option>
-                    </select>
-                </div>
-                <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-                    <button type="button" class="btn btn-secondary" onclick="fecharModalUsuario()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
-                </div>
-            </form>
-        </div>
-    </div>
     <script>
         // --- 1. CONFIGURAÇÃO SUPABASE (CORRIGIDO) ---
         const SUPABASE_URL = 'https://wzzyxbkhmlfilvlihvvl.supabase.co';
@@ -779,11 +721,8 @@
             cultos: [],
             escalas: [],
             membros: [],
-            usuarios: [],
             charts: {},
-            theme: localStorage.getItem('app-theme') || 'light',
-            currentUser: null,
-            currentRole: null
+            theme: localStorage.getItem('app-theme') || 'light'
         };
         // --- 3. INICIALIZAÇÃO ---
         document.addEventListener('DOMContentLoaded', async () => {
@@ -796,13 +735,7 @@
        
             // Tenta a conexão e carrega os dados
             await checkConnection();
-            await checkSession();
-            if (estado.currentUser) {
-                await carregarDados();
-                await aplicarPermissoes();
-            } else {
-                document.getElementById('login-modal').style.display = 'flex';
-            }
+            await carregarDados();
        
             document.getElementById('loading-overlay').style.display = 'none';
         });
@@ -830,57 +763,18 @@
                 mostrarToast("Falha ao conectar ao banco de dados.", "error");
             }
         }
-        async function checkSession() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                estado.currentUser = session.user;
-                const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
-                estado.currentRole = profile ? profile.role : null;
-                document.getElementById('user-name').innerText = session.user.email.split('@')[0];
-                document.getElementById('user-role').innerText = estado.currentRole.charAt(0).toUpperCase() + estado.currentRole.slice(1);
-            }
-        }
-        async function aplicarPermissoes() {
-            const role = estado.currentRole;
-            const tabsToHide = [];
-            if (role !== 'coordenador') {
-                tabsToHide.push('usuarios-tab');
-                tabsToHide.push('configuracoes-tab');
-                if (role === 'usuario' || role === 'lider') {
-                    tabsToHide.push('dashboard-tab');
-                    tabsToHide.push('registro-tab');
-                    tabsToHide.push('historico-tab');
-                    tabsToHide.push('membros-tab');
-                }
-                if (role === 'gerenciador') {
-                    tabsToHide.push('membros-tab');
-                }
-            }
-            tabsToHide.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.classList.add('hidden');
-            });
-            // Para escalas
-            if (role === 'usuario') {
-                document.getElementById('new-escala-btn').classList.add('hidden');
-            }
-            // Em renderEscalas, esconder edit se user
-            renderEscalas(); // Re-render to apply
-        }
         async function carregarDados() {
             document.getElementById('loading-text').innerText = "Carregando dados...";
        
             try {
-                const [resCultos, resEscalas, resMembros, resUsuarios] = await Promise.all([
+                const [resCultos, resEscalas, resMembros] = await Promise.all([
                     supabase.from('cultos').select('*').order('data_culto', { ascending: false }),
                     supabase.from('escalas').select('*'),
-                    supabase.from('membros').select('*').order('nome'),
-                    supabase.from('profiles').select('id, role, users:auth.users(email)').order('users.email')
+                    supabase.from('membros').select('*').order('nome')
                 ]);
                 estado.cultos = resCultos.data || [];
                 estado.escalas = resEscalas.data || [];
                 estado.membros = resMembros.data || [];
-                estado.usuarios = resUsuarios.data || [];
                 populateDepartamentosSelects();
                 atualizarUI();
            
@@ -1095,7 +989,6 @@ function editarMembro(id) {
             renderHistorico();
             renderEscalas();
             renderMembros();
-            renderUsuarios();
             updateBadges();
         }
         function renderDashboard() {
@@ -1685,115 +1578,6 @@ document.getElementById('membro-cep')?.addEventListener('blur', async function (
         mostrarToast('Erro ao consultar CEP.', 'error');
     }
 });
-        async function login(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) {
-                mostrarToast('Erro no login: ' + error.message, 'error');
-            } else {
-                document.getElementById('login-modal').style.display = 'none';
-                await checkSession();
-                await carregarDados();
-                await aplicarPermissoes();
-            }
-        }
-        async function logout() {
-            const { error } = await supabase.auth.signOut();
-            if (!error) {
-                window.location.reload();
-            }
-        }
-        async function salvarUsuario(e) {
-            e.preventDefault();
-            const id = document.getElementById('usuario-id').value;
-            const email = document.getElementById('usuario-email').value;
-            const password = document.getElementById('usuario-password').value;
-            const role = document.getElementById('usuario-role').value;
-            try {
-                if (id) {
-                    // Atualizar role
-                    const { error } = await supabase.from('profiles').update({ role }).eq('id', id);
-                    if (error) throw error;
-                    mostrarToast('Usuário atualizado!', 'success');
-                } else {
-                    // Criar novo
-                    const { data: { user }, error } = await supabase.auth.signUp({ email, password });
-                    if (error) throw error;
-                    const { error: profileError } = await supabase.from('profiles').insert({ id: user.id, role });
-                    if (profileError) throw profileError;
-                    mostrarToast('Usuário criado!', 'success');
-                }
-                fecharModalUsuario();
-                await carregarDados();
-            } catch (err) {
-                mostrarToast('Erro: ' + err.message, 'error');
-            }
-        }
-        async function editarUsuario(id) {
-            const usuario = estado.usuarios.find(u => u.id === id);
-            if (!usuario) return;
-            document.getElementById('usuario-id').value = usuario.id;
-            document.getElementById('usuario-email').value = usuario.users.email;
-            document.getElementById('usuario-password').value = ''; // Não editar senha
-            document.getElementById('usuario-role').value = usuario.role;
-            document.getElementById('usuario-password').disabled = true;
-            document.getElementById('modal-usuario').style.display = 'flex';
-        }
-        async function deletarUsuario(id) {
-            if (!confirm('Excluir usuário?')) return;
-            const { error } = await supabase.auth.admin.deleteUser(id);
-            if (error) {
-                mostrarToast('Erro ao excluir: ' + error.message, 'error');
-            } else {
-                mostrarToast('Usuário excluído', 'success');
-                await carregarDados();
-            }
-        }
-        function openModalUsuario() {
-            document.getElementById('form-usuario').reset();
-            document.getElementById('usuario-id').value = '';
-            document.getElementById('usuario-password').disabled = false;
-            document.getElementById('modal-usuario').style.display = 'flex';
-        }
-        function fecharModalUsuario() {
-            document.getElementById('modal-usuario').style.display = 'none';
-        }
-        function renderUsuarios() {
-            const container = document.getElementById('usuarios-table-container');
-            if (!container) return;
-            container.innerHTML = `
-                <div class="table-responsive">
-                    <table class="table" style="width:100%; border-collapse:collapse;">
-                        <thead>
-                            <tr style="border-bottom:2px solid var(--border-color); text-align:left; background-color: var(--bg-main);">
-                                <th style="padding:15px;">E-mail</th>
-                                <th style="padding:15px;">Perfil</th>
-                                <th style="padding:15px;">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${estado.usuarios.map(u => `
-                                <tr style="border-bottom:1px solid var(--border-color);">
-                                    <td style="padding:15px;">${u.users.email}</td>
-                                    <td style="padding:15px;">${u.role}</td>
-                                    <td style="padding:15px;">
-                                        <button class="btn" style="color:var(--primary); background:none; border:none; margin-right:10px;" onclick="editarUsuario('${u.id}')"><i class="fas fa-edit"></i></button>
-                                        <button class="btn" style="color:var(--danger); background:none; border:none;" onclick="deletarUsuario('${u.id}')"><i class="fas fa-trash"></i></button>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        }
-        // Bind login form
-        const loginForm = document.getElementById('login-form');
-        if (loginForm) loginForm.addEventListener('submit', login);
-        const usuarioForm = document.getElementById('form-usuario');
-        if (usuarioForm) usuarioForm.addEventListener('submit', salvarUsuario);
     </script>
 </body>
 </html>
