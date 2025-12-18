@@ -711,12 +711,12 @@
 </div>
     <div id="toast-container"></div>
     <script>
-        // --- 1. CONFIGURAÇÃO SUPABASE COM DIAGNÓSTICO MELHORADO ---
-        const SUPABASE_URL = 'https://qsbeimeajyqymsxsfhlm.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_3ZeAx6GUMeuKR6YruktxIg_kt73fdTA';
+        // --- 1. CONFIGURAÇÃO SUPABASE COM CREDENCIAIS ANÔNIMAS ---
+        const SUPABASE_URL = 'https://wzzyxbkhmlfilvlihvvl.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6enl4YmtobWxmaWx2bGlodnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTAzNzcsImV4cCI6MjA3ODYyNjM3N30.K_QwwVD20xnlhNvTxb0jdTeH_3LU30W_aDeHquraQg8';
 
-        // Criando o cliente Supabase com configuração mais robusta
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        // Criando o cliente Supabase com credenciais anônimas
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
             auth: {
                 persistSession: false,
                 autoRefreshToken: false,
@@ -727,7 +727,7 @@
             },
             global: {
                 headers: {
-                    'apikey': SUPABASE_KEY
+                    'apikey': SUPABASE_ANON_KEY
                 }
             }
         });
@@ -751,7 +751,7 @@
                 const pingResponse = await fetch(SUPABASE_URL + '/rest/v1/', {
                     method: 'HEAD',
                     headers: {
-                        'apikey': SUPABASE_KEY
+                        'apikey': SUPABASE_ANON_KEY
                     }
                 });
                 
@@ -814,7 +814,7 @@
                 // Mostrar detalhes no console para depuração
                 console.group('Detalhes do erro de conexão:');
                 console.log('URL:', SUPABASE_URL);
-                console.log('API Key:', SUPABASE_KEY ? 'Presente' : 'Ausente');
+                console.log('API Key:', SUPABASE_ANON_KEY ? 'Presente' : 'Ausente');
                 console.log('Erro:', error);
                 console.groupEnd();
                 
