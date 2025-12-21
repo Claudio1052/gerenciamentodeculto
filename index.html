@@ -463,7 +463,6 @@
             <div id="escalas" class="tab-content">
                 <div class="section">
                     <h3 class="section-title"><i class="fas fa-clipboard-list"></i> Escalas</h3>
-                    <!-- Filtros -->
                     <div style="margin-bottom: 25px; background: var(--bg-main); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow);">
                         <h4 style="margin-bottom: 15px; color: var(--primary);">Filtros</h4>
                         <div class="form-grid">
@@ -484,7 +483,6 @@
     <div class="section">
         <h3 class="section-title">Gestão de Membros</h3>
     
-        <!-- Filtros -->
         <div style="margin-bottom: 25px; background: var(--bg-main); padding: 20px; border-radius: var(--radius); box-shadow: var(--shadow);">
             <h4 style="margin-bottom: 15px; color: var(--primary);">Filtros</h4>
             <div class="form-grid">
@@ -710,9 +708,10 @@
 </div>
     <div id="toast-container"></div>
     <script>
-        // --- 1. CONFIGURAÇÃO SUPABASE (CORRIGIDO) ---
+        // --- 1. CONFIGURAÇÃO SUPABASE (CORRIGIDA) ---
         const SUPABASE_URL = 'https://wzzyxbkhmlfilvlihvvl.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable__r9k3LzISUD3NwICOhOklw_mf1IprWw';
+        // Chave JWT anon public fornecida
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6enl4YmtobWxmaWx2bGlodnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTAzNzcsImV4cCI6MjA3ODYyNjM3N30.K_QwwVD20xnlhNvTxb0jdTeH_3LU30W_aDeHquraQg8';
    
         // Criando o cliente Supabase
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
