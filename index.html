@@ -708,9 +708,9 @@
 </div>
     <div id="toast-container"></div>
     <script>
-        // --- 1. CONFIGURAÇÃO SUPABASE (CORRIGIDA) ---
+        // --- 1. CONFIGURAÇÃO SUPABASE (ATUALIZADA) ---
         const SUPABASE_URL = 'https://wzzyxbkhmlfilvlihvvl.supabase.co';
-        // Chave JWT anon public fornecida
+        // Nova chave JWT Anon/Public (Correta)
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind6enl4YmtobWxmaWx2bGlodnZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMwNTAzNzcsImV4cCI6MjA3ODYyNjM3N30.K_QwwVD20xnlhNvTxb0jdTeH_3LU30W_aDeHquraQg8';
    
         // Criando o cliente Supabase
@@ -747,6 +747,7 @@
        
             try {
                 // Tenta fazer uma consulta simples para validar a conexão
+                // Se der erro aqui, muito provavelmente é RLS ou tabela inexistente
                 const { error } = await supabase.from('cultos').select('id', { count: 'exact', head: true });
            
                 if (error) throw error;
@@ -755,11 +756,15 @@
                 statusEl.classList.remove('status-error');
                 statusEl.classList.add('status-ok');
             } catch (e) {
-                console.error("Erro na conexão Supabase:", e);
-                statusEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erro de Conexão';
+                console.error("ERRO DETALHADO SUPABASE:", e); // Veja o console (F12) para detalhes
+                let msgErro = "Erro de Conexão";
+                if(e.code === "42P01") msgErro = "Tabela não encontrada";
+                if(e.code === "PGRST301") msgErro = "Erro de Permissão (RLS)";
+                
+                statusEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${msgErro}`;
                 statusEl.classList.remove('status-ok');
                 statusEl.classList.add('status-error');
-                mostrarToast("Falha ao conectar ao banco de dados.", "error");
+                mostrarToast(`Falha: ${e.message || msgErro}`, "error");
             }
         }
         async function carregarDados() {
@@ -771,6 +776,9 @@
                     supabase.from('escalas').select('*'),
                     supabase.from('membros').select('*').order('nome')
                 ]);
+                
+                if(resCultos.error) throw resCultos.error;
+                
                 estado.cultos = resCultos.data || [];
                 estado.escalas = resEscalas.data || [];
                 estado.membros = resMembros.data || [];
@@ -779,7 +787,7 @@
            
             } catch (err) {
                 console.error("Erro ao carregar dados:", err);
-                mostrarToast('Erro ao carregar dados do servidor.', 'error');
+                mostrarToast('Erro ao carregar dados (verifique RLS).', 'error');
             }
         }
         async function salvarCulto(e) {
@@ -1580,5 +1588,3 @@ document.getElementById('membro-cep')?.addEventListener('blur', async function (
     </script>
 </body>
 </html>
-
-
